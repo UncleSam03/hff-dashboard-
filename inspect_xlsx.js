@@ -3,7 +3,7 @@ const require = createRequire(import.meta.url);
 const XLSX = require('xlsx');
 const path = require('path');
 
-const filePath = path.resolve('../MOLEPOLOLE HALL REGISTRATION COMPLETE.xlsx');
+const filePath = path.resolve('./MOLEPOLOLE HALL REGISTRATION COMPLETE.xlsx');
 console.log("Reading file:", filePath);
 
 try {
