@@ -1,12 +1,15 @@
 import React from 'react';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
+import AuthGate from "@/auth/AuthGate";
 
 function App() {
   return (
-    <Layout>
-      <Dashboard />
-    </Layout>
+    <AuthGate>
+      <Layout>
+        <Dashboard />
+      </Layout>
+    </AuthGate>
   );
 }
 
