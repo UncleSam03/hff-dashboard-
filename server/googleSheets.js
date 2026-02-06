@@ -6,12 +6,18 @@ let cached = null;
 async function getSheetsClient() {
   if (cached) return cached;
 
-  const keyFile = resolveCredentialsPath();
-  const auth = new google.auth.GoogleAuth({
-    keyFile,
+  const creds = resolveCredentialsPath();
+  const authOptions = {
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
+  };
 
+  if (typeof creds === "string") {
+    authOptions.keyFile = creds;
+  } else {
+    authOptions.credentials = creds;
+  }
+
+  const auth = new google.auth.GoogleAuth(authOptions);
   cached = google.sheets({ version: "v4", auth });
   return cached;
 }
