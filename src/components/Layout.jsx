@@ -1,14 +1,13 @@
 import React from 'react';
 import { LayoutDashboard } from 'lucide-react';
-import { signOut } from "firebase/auth";
-import { firebaseAuth } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/auth/AuthContext";
 
 const Layout = ({ children }) => {
     const { user } = useAuth();
 
     async function onSignOut() {
-        await signOut(firebaseAuth);
+        await supabase.auth.signOut();
     }
 
     return (

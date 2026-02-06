@@ -1,31 +1,13 @@
 import React, { useMemo, useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { firebaseAuth } from "@/lib/firebase";
+import { supabase, isConfigured } from "@/lib/supabase";
+import { AlertCircle, Key, Info } from "lucide-react";
 
 function friendlyAuthError(err) {
-  const code = err?.code || "";
-  switch (code) {
-    case "auth/invalid-email":
-      return "That email address looks invalid.";
-    case "auth/missing-password":
-      return "Please enter a password.";
-    case "auth/weak-password":
-      return "Password is too weak. Use at least 6 characters.";
-    case "auth/email-already-in-use":
-      return "That email is already in use. Try signing in instead.";
-    case "auth/invalid-credential":
-    case "auth/user-not-found":
-    case "auth/wrong-password":
-      return "Incorrect email or password.";
-    case "auth/too-many-requests":
-      return "Too many attempts. Try again later.";
-    default:
-      return err?.message || "Something went wrong. Please try again.";
-  }
+  const message = err?.message || "";
+  if (message.includes("Invalid login credentials")) return "Incorrect email or password.";
+  if (message.includes("Email not confirmed")) return "Please confirm your email address.";
+  if (message.includes("User already registered")) return "That email is already in use. Try signing in instead.";
+  return message || "Something went wrong. Please try again.";
 }
 
 export default function AuthPage() {
@@ -38,6 +20,55 @@ export default function AuthPage() {
 
   const title = useMemo(() => (mode === "signin" ? "Sign in" : "Create account"), [mode]);
 
+  if (!isConfigured) {
+    return (
+      <div className="min-h-screen bg-hff-bg font-sans text-gray-900 flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-2xl bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-10">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="h-12 w-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+              <Key className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Configuration Required</h1>
+              <p className="text-gray-500">Supabase environment variables are missing.</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-semibold mb-1">Why is this happening?</p>
+                  <p>The application is secured with Supabase Auth, but it hasn't been linked to your Supabase project yet. This is why you're seeing this page instead of the login screen.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Info className="h-5 w-5 text-hff-primary" />
+                How to fix this:
+              </h2>
+              <ol className="list-decimal list-inside space-y-3 text-sm text-gray-600 pl-2">
+                <li>Go to your <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="text-hff-primary font-medium hover:underline">Supabase Dashboard</a>.</li>
+                <li>Go to <strong>Project Settings</strong> &gt; <strong>API</strong>.</li>
+                <li>Copy the <strong>Project URL</strong> and <strong>Anon Key</strong>.</li>
+                <li>Open your <code>.env.local</code> file in the project root.</li>
+                <li>Paste the values into <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>.</li>
+                <li><strong>Restart</strong> the development server.</li>
+              </ol>
+            </div>
+
+            <div className="pt-6 border-t border-gray-100">
+              <p className="text-xs text-gray-400">Need help? Reference <code>.env.example</code> for the correct format.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   async function onSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
@@ -46,9 +77,12 @@ export default function AuthPage() {
 
     try {
       if (mode === "signin") {
-        await signInWithEmailAndPassword(firebaseAuth, email, password);
+        const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+        if (err) throw err;
       } else {
-        await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        const { error: err } = await supabase.auth.signUp({ email, password });
+        if (err) throw err;
+        setMessage("Check your email for the confirmation link!");
       }
     } catch (err) {
       setError(friendlyAuthError(err));
@@ -66,7 +100,8 @@ export default function AuthPage() {
         setError("Enter your email above first, then click “Reset password”.");
         return;
       }
-      await sendPasswordResetEmail(firebaseAuth, email);
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email);
+      if (err) throw err;
       setMessage("Password reset email sent (check your inbox/spam).");
     } catch (err) {
       setError(friendlyAuthError(err));
