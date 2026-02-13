@@ -19,7 +19,7 @@ export async function pushPendingToSupabase() {
     if (isSyncing || !isConfigured || !navigator.onLine) return;
 
     // Fetch all records from Dexie that are not 'synced'
-    const pending = await db.participants
+    const pending = await db.registrations
         .where('sync_status')
         .equals('pending')
         .toArray();
@@ -48,14 +48,14 @@ export async function pushPendingToSupabase() {
                 });
 
             if (!error) {
-                await db.participants.update(id, {
+                await db.registrations.update(id, {
                     sync_status: 'synced',
                     synced_at: new Date().toISOString()
                 });
                 console.log(`[SupabaseSync] Successfully synced record: ${record.uuid}`);
             } else {
                 console.error(`[SupabaseSync] Error syncing ${record.uuid}:`, error.message);
-                await db.participants.update(id, { sync_status: 'failed' });
+                await db.registrations.update(id, { sync_status: 'failed' });
             }
         }
     } catch (err) {
@@ -75,7 +75,7 @@ export async function pullFromSupabase() {
     if (!isConfigured || !navigator.onLine) return;
 
     // Find the latest updated_at in our local store
-    const latestLocal = await db.participants.orderBy('updated_at').last();
+    const latestLocal = await db.registrations.orderBy('updated_at').last();
     const lastSyncTime = latestLocal?.updated_at || new Date(0).toISOString();
 
     const { data, error } = await supabase
@@ -93,18 +93,18 @@ export async function pullFromSupabase() {
         for (const remoteRecord of data) {
             // Put will update if UUID exists (Dexie doesn't auto-handle UUID as key yet, 
             // so we find existing or add new)
-            const existing = await db.participants.where('uuid').equals(remoteRecord.uuid).first();
+            const existing = await db.registrations.where('uuid').equals(remoteRecord.uuid).first();
 
             if (existing) {
                 // Last-Write-Wins: only update if remote is newer
                 if (new Date(remoteRecord.updated_at) > new Date(existing.updated_at)) {
-                    await db.participants.update(existing.id, {
+                    await db.registrations.update(existing.id, {
                         ...remoteRecord,
                         sync_status: 'synced'
                     });
                 }
             } else {
-                await db.participants.add({
+                await db.registrations.add({
                     ...remoteRecord,
                     sync_status: 'synced'
                 });

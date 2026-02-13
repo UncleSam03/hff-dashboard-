@@ -3,8 +3,14 @@ import Dexie from 'dexie';
 export const db = new Dexie('HFF_Dashboard_V2');
 
 // Schema Setup: UUID, name, gender, age, 18-day attendance array, sync_status
+// Schema Setup: UUID, name, gender, age, 18-day attendance array, sync_status
 db.version(1).stores({
     participants: '++id, uuid, name, gender, age, sync_status'
+});
+
+db.version(2).stores({
+    participants: '++id, uuid, name, gender, age, sync_status',
+    registrations: '++id, uuid, first_name, last_name, type, facilitator_uuid, sync_status'
 });
 
 export default db;
