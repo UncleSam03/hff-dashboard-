@@ -4,7 +4,7 @@ create table if not exists public.registrations (
   first_name text not null,
   last_name text not null,
   age integer,
-  gender text,
+  gender text check (gender in ('M', 'F')),
   contact text,
   place text,
   type text check (type in ('facilitator', 'participant')),

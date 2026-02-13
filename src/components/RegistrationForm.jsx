@@ -270,9 +270,8 @@ const RegistrationForm = ({ type, onBack, onSaveSuccess, inGroup }) => {
                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-hff-primary/50 focus:border-hff-primary outline-none transition-all bg-white"
                         >
                             <option value="">Select Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
                         </select>
                     </div>
                 </div>
