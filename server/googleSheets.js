@@ -71,3 +71,28 @@ export async function writeRegister(values) {
   });
 }
 
+export async function appendRegister(rows) {
+  const sheets = await getSheetsClient();
+  const { spreadsheetId, registerSheetName } = getSpreadsheetConfig();
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: `${registerSheetName}!A1`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: rows,
+    },
+  });
+}
+
+
+export async function getAvailableSheets() {
+  const sheets = await getSheetsClient();
+  const spreadsheetId = getEnv("HFF_SPREADSHEET_ID", { required: true });
+
+  const resp = await sheets.spreadsheets.get({
+    spreadsheetId,
+  });
+
+  return resp.data.sheets.map((s) => s.properties.title);
+}

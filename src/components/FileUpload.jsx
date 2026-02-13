@@ -37,9 +37,29 @@ const FileUpload = ({ onDataLoaded }) => {
     }, [onDataLoaded]);
 
     const processData = (rows) => {
-        const { participants, analytics, campaignDates, skippedRows } = parseHffRegisterRows(rows);
-        onDataLoaded({ participants, analytics, campaignDates, skippedRows, rawRows: rows });
-        setProcessing(false);
+        try {
+            console.log('Processing Excel rows:', rows.length, 'rows');
+            const { participants, analytics, campaignDates, skippedRows } = parseHffRegisterRows(rows);
+
+            console.log('Parsed data:', {
+                participantsCount: participants?.length,
+                analytics,
+                campaignDates,
+                skippedRowsCount: skippedRows?.length
+            });
+
+            // Validate that we have the required data structure
+            if (!analytics || !campaignDates) {
+                throw new Error('Parsing failed: Missing analytics or campaignDates in parsed data');
+            }
+
+            onDataLoaded({ participants, analytics, campaignDates, skippedRows, rawRows: rows });
+            setProcessing(false);
+        } catch (err) {
+            console.error('Error processing data:', err);
+            setError(err.message || 'Failed to process file data. Please check the file format.');
+            setProcessing(false);
+        }
     };
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({

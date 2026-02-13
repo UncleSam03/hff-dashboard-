@@ -8,9 +8,10 @@ export default {
         extend: {
             colors: {
                 hff: {
-                    primary: '#006B5D', // Deep Teal
-                    secondary: '#E3A817', // Golden Yellow
-                    bg: '#F9FAFB', // Light Grey
+                    primary: '#71167F', // Purple
+                    secondary: '#3EB049', // Green
+                    accent: '#7E1B9B', // More vibrant purple
+                    bg: '#FFFFFF', // White background like in the image
                 },
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",

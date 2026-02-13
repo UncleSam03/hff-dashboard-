@@ -14,6 +14,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState("signin"); // signin | signup
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -80,7 +81,15 @@ export default function AuthPage() {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
       } else {
-        const { error: err } = await supabase.auth.signUp({ email, password });
+        const { error: err } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username: username
+            }
+          }
+        });
         if (err) throw err;
         setMessage("Check your email for the confirmation link!");
       }
@@ -154,6 +163,21 @@ export default function AuthPage() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-hff-primary/40"
+                placeholder="johndoe"
+                required
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input

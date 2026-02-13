@@ -6,14 +6,17 @@ import { GenderChart, EducationChart, MaritalStatusChart } from './DemographicsC
 import FinancialImpact from './FinancialImpact';
 import AIReport from './AIReport';
 import { Users, UserCheck, CalendarDays, RefreshCw, AlertCircle, CloudDownload, CloudUpload, Wifi } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { hffFetch } from '../lib/api';
 
-const Dashboard = () => {
+const Dashboard = ({ mode = 'general' }) => {
     const [data, setData] = useState(null);
     const [sheetsMode, setSheetsMode] = useState(false);
     const [sheetsLoading, setSheetsLoading] = useState(false);
     const [sheetsError, setSheetsError] = useState(null);
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
+    const [selectedDay, setSelectedDay] = useState(null);
 
     const handleDataLoaded = (parsedData) => {
         setData(parsedData);
@@ -27,23 +30,46 @@ const Dashboard = () => {
         setSheetsError(null);
     };
 
-    const loadFromGoogleSheets = async ({ silent = false } = {}) => {
+    const loadFromGoogleSheets = async ({ silent = false, source = 'sqlite' } = {}) => {
         if (!silent) setSheetsLoading(true);
         if (!silent) setSheetsError(null);
         try {
-            const resp = await fetch('/api/stats', { method: 'GET' });
-            const json = await resp.json();
-            if (!resp.ok) throw new Error(json?.details || json?.error || 'Failed to load from Google Sheets');
+            const url = source === 'cloud' ? '/api/stats?source=cloud' : '/api/stats';
+            const resp = await hffFetch(url);
+
+            const text = await resp.text();
+            let json;
+            try {
+                json = JSON.parse(text);
+            } catch (parseError) {
+                console.error('[Dashboard] JSON Parse Error. Raw response:', text);
+                throw new Error(`Failed to parse response as JSON. Check console for details. (Status: ${resp.status})`);
+            }
+
+            if (!resp.ok) {
+                const errorMessage = json?.details || json?.error || `Server error (${resp.status})`;
+                throw new Error(errorMessage);
+            }
 
             setData(json);
             setSheetsMode(true);
             setLastUpdatedAt(new Date());
         } catch (e) {
-            if (!silent) setSheetsError(e instanceof Error ? e.message : String(e));
+            const msg = e instanceof Error ? e.message : String(e);
+            if (!silent) setSheetsError(msg);
+            console.error('[Dashboard] Load Error:', msg);
         } finally {
             if (!silent) setSheetsLoading(false);
         }
     };
+
+
+    // Auto-load if Phikwe mode
+    useEffect(() => {
+        if (mode === 'phikwe') {
+            loadFromGoogleSheets();
+        }
+    }, [mode]);
 
     const canSyncUploadToSheets = useMemo(() => {
         return Boolean(!sheetsMode && data?.rawRows && Array.isArray(data.rawRows));
@@ -53,23 +79,34 @@ const Dashboard = () => {
         setSheetsLoading(true);
         setSheetsError(null);
         try {
-            const resp = await fetch('/api/register', {
+            // Step 1: Push local data to the server's SQLite store
+            const resp = await hffFetch('/api/register', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rows: data.rawRows }),
             });
-            const json = await resp.json();
-            if (!resp.ok) throw new Error(json?.details || json?.error || 'Failed to write to Google Sheets');
+            if (!resp.ok) {
+                const json = await resp.json();
+                throw new Error(json?.details || json?.error || 'Failed to write to local system');
+            }
 
-            setData(json);
+            // Step 2: Push from server to Google Sheets
+            const cloudResp = await hffFetch('/api/cloud/sync', { method: 'POST' });
+            if (!cloudResp.ok) {
+                const json = await cloudResp.json();
+                throw new Error(json?.details || json?.error || 'Failed to sync to Google Sheets');
+            }
+
             setSheetsMode(true);
             setLastUpdatedAt(new Date());
+            alert("Sync to Google Sheets successful!");
         } catch (e) {
             setSheetsError(e instanceof Error ? e.message : String(e));
         } finally {
             setSheetsLoading(false);
         }
     };
+
 
     useEffect(() => {
         if (!sheetsMode || !autoRefresh) return;
@@ -82,36 +119,58 @@ const Dashboard = () => {
 
     if (!data) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="text-center mb-10 max-w-lg">
-                    <h2 className="text-3xl font-bold text-hff-primary mb-3">Campaign Analytics</h2>
-                    <p className="text-gray-500">Upload your HFF attendance register (XLSX/CSV) to generate accurate impact reports.</p>
-                </div>
-                <FileUpload onDataLoaded={handleDataLoaded} />
-
-                <div className="w-full max-w-2xl mx-auto">
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between gap-4">
-                        <div className="flex items-start gap-3">
-                            <div className="h-10 w-10 bg-hff-primary/10 rounded-lg flex items-center justify-center text-hff-primary">
-                                <Wifi className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-900">Real-time stats (Google Sheets)</p>
-                                <p className="text-sm text-gray-500">Load the latest register from your connected Google Sheet.</p>
-                                {sheetsError && (
-                                    <p className="text-sm text-red-600 mt-2">{sheetsError}</p>
-                                )}
-                            </div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in duration-700">
+                {mode === 'phikwe' ? (
+                    <div className="text-center max-w-lg">
+                        <div className="h-16 w-16 bg-hff-primary/10 rounded-2xl flex items-center justify-center text-hff-primary mx-auto mb-6 animate-pulse">
+                            <Wifi className="h-8 w-8" />
                         </div>
-                        <button
-                            onClick={() => loadFromGoogleSheets()}
-                            disabled={sheetsLoading}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-hff-primary text-white font-semibold text-sm hover:bg-hff-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            <CloudDownload className="h-4 w-4" />
-                            {sheetsLoading ? "Loading..." : "Load Live"}
-                        </button>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-3">Connecting to Phikwe...</h2>
+                        <p className="text-gray-500 mb-8">Fetching live registration data from local system storage.</p>
+                        {sheetsLoading && <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-hff-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />}
+                        {sheetsError && (
+                            <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm">
+                                {sheetsError}
+                                <button onClick={() => loadFromGoogleSheets()} className="block mx-auto mt-2 font-bold underline">Try Again</button>
+                            </div>
+                        )}
                     </div>
+                ) : (
+                    <>
+                        <div className="text-center mb-10 max-w-lg">
+                            <h2 className="text-3xl font-bold text-hff-primary mb-3">General Campaign Analysis</h2>
+                            <p className="text-gray-500">Upload your HFF attendance register (XLSX/CSV) to generate accurate impact reports.</p>
+                        </div>
+                        <FileUpload onDataLoaded={handleDataLoaded} />
+                    </>
+                )}
+            </div>
+        );
+    }
+
+    // Debug logging to help diagnose data structure issues
+    console.log('Dashboard data received:', data);
+    console.log('Analytics:', data?.analytics);
+    console.log('Campaign dates:', data?.campaignDates);
+
+    // Validate data structure before rendering
+    if (!data.analytics || !data.campaignDates) {
+        console.error('Invalid data structure - missing analytics or campaignDates:', data);
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in duration-700">
+                <div className="text-center max-w-lg">
+                    <div className="h-16 w-16 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 mx-auto mb-6">
+                        <AlertCircle className="h-8 w-8" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-3">Data Processing Error</h2>
+                    <p className="text-gray-500 mb-4">The uploaded file was processed but the data structure is invalid.</p>
+                    <p className="text-sm text-gray-600 mb-6">Please ensure your file matches the HFF attendance register template format.</p>
+                    <button
+                        onClick={handleReset}
+                        className="px-6 py-3 bg-hff-primary text-white rounded-lg font-semibold hover:bg-hff-primary/90 transition-colors"
+                    >
+                        Try Another File
+                    </button>
                 </div>
             </div>
         );
@@ -191,7 +250,7 @@ const Dashboard = () => {
                             <div className="flex items-center justify-end gap-2">
                                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-hff-primary/10 text-hff-primary font-semibold">
                                     <Wifi className="h-3.5 w-3.5" />
-                                    Live: Google Sheet
+                                    Live: Local Storage
                                 </span>
                                 <label className="inline-flex items-center gap-2 select-none cursor-pointer">
                                     <input
@@ -230,6 +289,70 @@ const Dashboard = () => {
                     icon={CalendarDays}
                     description="Participants per session"
                 />
+            </div>
+
+            {/* Daily Analysis Section */}
+            <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Day-by-Day Analysis</h2>
+                        <p className="text-gray-500">Analyze campaign impact for specific days across the 18-day cycle.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 max-w-md">
+                        {campaignDates.slice(0, 18).map((date, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setSelectedDay(selectedDay === date ? null : date)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border",
+                                    selectedDay === date
+                                        ? "bg-hff-primary text-white border-hff-primary shadow-md shadow-hff-primary/20"
+                                        : "bg-gray-50 text-gray-600 border-gray-100 hover:border-hff-primary/30"
+                                )}
+                            >
+                                Day {idx + 1}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {selectedDay ? (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider block mb-1">Attendance on {selectedDay}</span>
+                            <span className="text-4xl font-black text-hff-primary">
+                                {data.participants.filter(p => p.attendance[selectedDay]).length}
+                            </span>
+                        </div>
+                        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider block mb-1">Males</span>
+                            <span className="text-3xl font-bold text-blue-600">
+                                {data.participants.filter(p => p.attendance[selectedDay] && p.gender === 'M').length}
+                            </span>
+                        </div>
+                        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-center">
+                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider block mb-1">Females</span>
+                            <span className="text-3xl font-bold text-pink-500">
+                                {data.participants.filter(p => p.attendance[selectedDay] && p.gender === 'F').length}
+                            </span>
+                        </div>
+                        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex items-center justify-center">
+                            <div className="text-center">
+                                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider block mb-1">Retention</span>
+                                <span className="text-xl font-bold text-gray-700">
+                                    {analytics.totalRegistered > 0
+                                        ? Math.round((data.participants.filter(p => p.attendance[selectedDay]).length / analytics.totalRegistered) * 100)
+                                        : 0}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center py-12 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                        <CalendarDays className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-400 font-medium">Select a day from the list above to view specific analysis</p>
+                    </div>
+                )}
             </div>
 
             {/* Main Charts Area */}

@@ -5,8 +5,9 @@ function normalizeString(value) {
 
 function normalizeGender(value) {
   const g = normalizeString(value).toUpperCase();
-  if (g === "M" || g === "MALE") return "M";
-  if (g === "F" || g === "FEMALE") return "F";
+  // Support standard codes (1=M, 2=F) and Setswana (Monna=M, Mosadi=F)
+  if (g === "M" || g === "MALE" || g === "1" || g === "MONNA") return "M";
+  if (g === "F" || g === "FEMALE" || g === "2" || g === "MOSADI") return "F";
   return "Unknown";
 }
 
@@ -36,21 +37,21 @@ export function detectAttendanceColumns(rows, headerRowIndex) {
   const startCol = 10;
 
   if (!Array.isArray(dateRow)) {
-    // Fallback to the observed 12-day shape
-    return Array.from({ length: 12 }, (_, i) => startCol + i);
+    // Fallback to the observed 18-day shape
+    return Array.from({ length: 18 }, (_, i) => startCol + i);
   }
 
   const cols = [];
-  const maxCol = Math.max(dateRow.length, startCol + 12);
+  const maxCol = Math.max(dateRow.length, startCol + 18);
 
   for (let col = startCol; col < maxCol; col++) {
     const v = dateRow[col];
     if (normalizeString(v) !== "") cols.push(col);
   }
 
-  // If the date row is empty in those cols, fallback to 12 columns (10..21)
+  // If the date row is empty in those cols, fallback to 18 columns (10..27)
   if (cols.length === 0) {
-    return Array.from({ length: 12 }, (_, i) => startCol + i);
+    return Array.from({ length: 18 }, (_, i) => startCol + i);
   }
 
   return cols;
@@ -97,14 +98,8 @@ export function parseHffRegisterRows(rows) {
     }
 
     const gender = normalizeGender(row[3]);
-    if (gender === "Unknown") {
-      skippedRows.push({
-        row: i + 1,
-        name: firstName,
-        reason: "Missing or Invalid Gender",
-      });
-      continue;
-    }
+    // Note: We don't add to skippedRows for missing gender to keep the dashboard clean.
+    // Name and ID are the primary requirements for a valid participant.
 
     const participant = {
       id,
@@ -137,11 +132,22 @@ export function parseHffRegisterRows(rows) {
 }
 
 export function calculateAnalytics(participants, dates) {
+  // Defensive checks for empty or invalid data
+  if (!Array.isArray(participants)) {
+    console.warn('calculateAnalytics: participants is not an array', participants);
+    participants = [];
+  }
+
+  if (!Array.isArray(dates)) {
+    console.warn('calculateAnalytics: dates is not an array', dates);
+    dates = [];
+  }
+
   const totalRegistered = participants.length;
   const uniqueAttendees = participants.filter((p) => p.daysAttended > 0).length;
 
   const dailyStats = dates.map((date) => {
-    const count = participants.filter((p) => p.attendance[date]).length;
+    const count = participants.filter((p) => p.attendance && p.attendance[date]).length;
     return { date, count };
   });
 
@@ -166,7 +172,7 @@ export function calculateAnalytics(participants, dates) {
     return acc;
   }, {});
 
-  return {
+  const result = {
     totalRegistered,
     uniqueAttendees,
     avgAttendance,
@@ -177,5 +183,8 @@ export function calculateAnalytics(participants, dates) {
       maritalStatus: maritalDist,
     },
   };
+
+  console.log('calculateAnalytics result:', result);
+  return result;
 }
 
