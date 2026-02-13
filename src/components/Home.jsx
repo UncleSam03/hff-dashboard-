@@ -83,6 +83,32 @@ const Home = ({ onSelectMode }) => {
                     </div>
                 </div>
 
+                {/* Campaign Hub Card */}
+                <div
+                    onClick={() => onSelectMode('hub')}
+                    className="group relative bg-white rounded-3xl border border-gray-100 p-8 shadow-xl shadow-gray-200/50 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-500 cursor-pointer overflow-hidden border-t-4 border-t-purple-500"
+                >
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <LayoutDashboard className="h-32 w-32" />
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="h-14 w-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform duration-500">
+                            <LayoutDashboard className="h-8 w-8" />
+                        </div>
+
+                        <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">Campaign Hub</h2>
+                        <p className="text-gray-600 mb-8 line-height-relaxed">
+                            Manage registered people, mark daily attendance, and track facilitator progress on the notice board.
+                        </p>
+
+                        <div className="flex items-center text-purple-600 font-bold group-hover:gap-2 transition-all">
+                            <span>Open Hub</span>
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                        </div>
+                    </div>
+                </div>
+
                 {/* Phikwe Campaign Card */}
                 <div
                     onClick={() => onSelectMode('phikwe')}

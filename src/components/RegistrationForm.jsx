@@ -12,6 +12,8 @@ const RegistrationForm = ({ type, onBack, onSaveSuccess, inGroup }) => {
         gender: '',
         contact: '',
         place: '',
+        education: '',
+        maritalStatus: '',
         participantsCount: 1,
         booksDistributed: 0,
     });
@@ -84,6 +86,8 @@ const RegistrationForm = ({ type, onBack, onSaveSuccess, inGroup }) => {
                 gender: formData.gender,
                 contact: formData.contact,
                 place: formData.place,
+                education: formData.education,
+                marital_status: formData.maritalStatus,
                 type: type, // 'facilitator' or 'participant'
                 // Facilitator specific
                 participants_count: type === 'facilitator' ? parseInt(formData.participantsCount) : null,
@@ -111,6 +115,8 @@ const RegistrationForm = ({ type, onBack, onSaveSuccess, inGroup }) => {
                 gender: '',
                 contact: '',
                 place: '',
+                education: '',
+                maritalStatus: '',
                 participantsCount: 1,
                 booksDistributed: 0,
             });
@@ -272,6 +278,42 @@ const RegistrationForm = ({ type, onBack, onSaveSuccess, inGroup }) => {
                             <option value="">Select Gender</option>
                             <option value="M">Male</option>
                             <option value="F">Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Education Level</label>
+                        <select
+                            name="education"
+                            value={formData.education}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-hff-primary/50 focus:border-hff-primary outline-none transition-all bg-white"
+                        >
+                            <option value="">Select Education</option>
+                            <option value="Primary">Primary</option>
+                            <option value="Junior Secondary">Junior Secondary</option>
+                            <option value="Senior Secondary">Senior Secondary</option>
+                            <option value="Vocational">Vocational</option>
+                            <option value="Tertiary">Tertiary</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                        <select
+                            name="maritalStatus"
+                            value={formData.maritalStatus}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-hff-primary/50 focus:border-hff-primary outline-none transition-all bg-white"
+                        >
+                            <option value="">Select Status</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widowed">Widowed</option>
+                            <option value="Cohabiting">Cohabiting</option>
                         </select>
                     </div>
                 </div>

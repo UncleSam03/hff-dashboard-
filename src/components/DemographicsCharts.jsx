@@ -2,12 +2,10 @@ import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const COLORS = ['#71167F', '#3EB049', '#7E1B9B', '#A569BD', '#45B39D', '#264653'];
+const COLORS = ['#71167F', '#3EB049', '#7E1B9B', '#A569BD', '#45B39D', '#264653', '#E76F51', '#F4A261'];
 
 export const GenderChart = ({ data }) => {
-    // Validate data
     if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
-        console.warn('GenderChart: Invalid or empty data', data);
         return (
             <Card className="shadow-sm border-gray-100">
                 <CardHeader>
@@ -64,20 +62,17 @@ export const GenderChart = ({ data }) => {
 };
 
 export const EducationChart = ({ data }) => {
-    // Validate data
     if (!data || typeof data !== 'object') {
-        console.warn('EducationChart: Invalid data', data);
         data = {};
     }
 
-    const chartData = [
-        { name: 'Primary', code: 'P', value: data['P'] || 0 },
-        { name: 'Junior', code: 'J', value: data['J'] || 0 },
-        { name: 'Senior', code: 'S', value: data['S'] || 0 },
-        { name: 'Tertiary', code: 'U', value: data['U'] || 0 },
-    ];
+    // Support full-text keys from the offline form
+    const chartData = Object.entries(data)
+        .map(([name, value]) => ({ name, value }))
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value);
 
-    const hasData = chartData.some(item => item.value > 0);
+    const hasData = chartData.length > 0;
 
     return (
         <Card className="shadow-sm border-gray-100">
@@ -94,7 +89,7 @@ export const EducationChart = ({ data }) => {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="code" tickLine={false} axisLine={false} />
+                                <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={11} />
                                 <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
                                 <Tooltip cursor={{ fill: '#F9FAFB' }} />
                                 <Bar dataKey="value" fill="#71167F" radius={[4, 4, 0, 0]} />
@@ -108,11 +103,9 @@ export const EducationChart = ({ data }) => {
 };
 
 export const MaritalStatusChart = ({ data }) => {
-    // Validate data
     if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
-        console.warn('MaritalStatusChart: Invalid or empty data', data);
         return (
-            <Card className="card col-span-full md:col-span-2 lg:col-span-1 shadow-sm border-gray-100">
+            <Card className="shadow-sm border-gray-100">
                 <CardHeader>
                     <CardTitle className="text-gray-900 text-lg">Marital Status</CardTitle>
                 </CardHeader>
@@ -123,14 +116,14 @@ export const MaritalStatusChart = ({ data }) => {
         );
     }
 
-    const map = { 'S': 'Single', 'M': 'Married', 'W': 'Widow', 'D': 'Divorced', 'C': 'Cohabit' };
-    const chartData = Object.entries(data).map(([key, value]) => ({
-        name: map[key] || key,
-        value
-    })).sort((a, b) => b.value - a.value);
+    // Support full-text keys from the offline form
+    const chartData = Object.entries(data)
+        .map(([name, value]) => ({ name, value }))
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value);
 
     return (
-        <Card className="card col-span-full md:col-span-2 lg:col-span-1 shadow-sm border-gray-100">
+        <Card className="shadow-sm border-gray-100">
             <CardHeader>
                 <CardTitle className="text-gray-900 text-lg">Marital Status</CardTitle>
             </CardHeader>

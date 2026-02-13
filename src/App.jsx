@@ -5,9 +5,10 @@ import Home from './components/Home';
 import AuthGate from "@/auth/AuthGate";
 
 import OfflineCollect from './components/OfflineCollect';
+import Hub from './components/Hub';
 
 function App() {
-  const [mode, setMode] = useState('home'); // 'home', 'phikwe', 'general', 'collect'
+  const [mode, setMode] = useState('home'); // 'home', 'phikwe', 'general', 'collect', 'hub'
 
   const handleSelectMode = (newMode) => {
     setMode(newMode);
@@ -24,6 +25,8 @@ function App() {
           <Home onSelectMode={handleSelectMode} />
         ) : mode === 'collect' ? (
           <OfflineCollect onBack={handleBackToHome} />
+        ) : mode === 'hub' ? (
+          <Hub onBack={handleBackToHome} />
         ) : (
           <Dashboard mode={mode} onBack={handleBackToHome} />
         )}
