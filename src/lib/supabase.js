@@ -1,11 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
-function getEnv(name) {
-    return import.meta.env[name];
-}
+import { getEnv } from "./env.js";
 
-const supabaseUrl = getEnv("VITE_SUPABASE_URL");
-const supabaseAnonKey = getEnv("VITE_SUPABASE_ANON_KEY");
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Resilient configuration check
 const isConfigured =
