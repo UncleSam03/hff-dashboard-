@@ -258,7 +258,7 @@ export default function AuthPage() {
           <div className="text-center mb-16 pt-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/90 text-sm font-semibold tracking-wide">
               <Sparkles className="h-4 w-4 text-amber-400" />
-              Hope For Families Campaign
+              Healthy Families Foundation
             </div>
             <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight leading-tight">
               HFF <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-pink-400">Campaigns</span>
