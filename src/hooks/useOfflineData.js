@@ -51,8 +51,8 @@ const useOfflineData = () => {
             name: data.name || `${data.firstName || ''} ${data.lastName || ''}`.trim(),
             gender: data.gender || 'Unknown',
             age: data.age || null,
-            // 18-day attendance array (defaults to 18 falses if not provided)
-            attendance: data.attendance || Array(18).fill(false),
+            // 12-day attendance array (defaults to 12 falses if not provided)
+            attendance: data.attendance || Array(12).fill(false),
             sync_status: 'pending',
             createdAt: new Date().toISOString(),
             updated_at: new Date().toISOString(),

@@ -37,21 +37,21 @@ export function detectAttendanceColumns(rows, headerRowIndex) {
   const startCol = 10;
 
   if (!Array.isArray(dateRow)) {
-    // Fallback to the observed 18-day shape
-    return Array.from({ length: 18 }, (_, i) => startCol + i);
+    // Fallback to the observed 12-day shape
+    return Array.from({ length: 12 }, (_, i) => startCol + i);
   }
 
   const cols = [];
-  const maxCol = Math.max(dateRow.length, startCol + 18);
+  const maxCol = Math.max(dateRow.length, startCol + 12);
 
   for (let col = startCol; col < maxCol; col++) {
     const v = dateRow[col];
     if (normalizeString(v) !== "") cols.push(col);
   }
 
-  // If the date row is empty in those cols, fallback to 18 columns (10..27)
+  // If the date row is empty in those cols, fallback to 12 columns (10..21)
   if (cols.length === 0) {
-    return Array.from({ length: 18 }, (_, i) => startCol + i);
+    return Array.from({ length: 12 }, (_, i) => startCol + i);
   }
 
   return cols;

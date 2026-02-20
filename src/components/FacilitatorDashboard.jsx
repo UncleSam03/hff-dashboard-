@@ -8,7 +8,7 @@ import {
     Calendar, Loader2
 } from "lucide-react";
 
-const TOTAL_DAYS = 18;
+const TOTAL_DAYS = 12;
 
 export default function FacilitatorDashboard({ onBack }) {
     const { user, profile } = useAuth();

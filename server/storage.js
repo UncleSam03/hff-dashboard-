@@ -42,7 +42,7 @@ async function migrateIfNeeded() {
                         row[7], // Marital Status
                         row[8], // Other 2
                         row[9], // Occupation
-                        JSON.stringify(row.slice(10)) // Attendance (18 days)
+                        JSON.stringify(row.slice(10)) // Attendance (12 days)
                     );
                 }
             });
@@ -57,8 +57,8 @@ async function migrateIfNeeded() {
             } else {
                 // No JSON file to migrate, initialize default headers
                 console.log('[DB] No JSON found, initializing defaults.');
-                db.prepare('INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)').run('header_row_0', JSON.stringify(["No.", "First Name", "Last Name", "Gender", "Age", "Other", "Education", "Marital Status", "Other", "Occupation", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7", "Day 8", "Day 9", "Day 10", "Day 11", "Day 12", "Day 13", "Day 14", "Day 15", "Day 16", "Day 17", "Day 18"]));
-                db.prepare('INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)').run('header_row_1', JSON.stringify(["", "", "", "", "", "", "", "", "", "DATE:", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"]));
+                db.prepare('INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)').run('header_row_0', JSON.stringify(["No.", "First Name", "Last Name", "Gender", "Age", "Other", "Education", "Marital Status", "Other", "Occupation", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7", "Day 8", "Day 9", "Day 10", "Day 11", "Day 12"]));
+                db.prepare('INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)').run('header_row_1', JSON.stringify(["", "", "", "", "", "", "", "", "", "DATE:", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]));
             }
         }
     }

@@ -5,7 +5,7 @@ This document provides an extensive breakdown of the **Hope For Families (HFF) D
 ---
 
 ## 1. Project Mission
-The HFF Dashboard is a specialized data management and visualization platform for the **Hope For Families** campaign. Its primary goal is to track participant registration and attendance across multi-day campaigns (typically 18 days) and provide real-time demographic insights. The system bridges the gap between **offline data collection** (via Enketo forms and Excel sheets) and **centralized monitoring** (via Google Sheets and a web dashboard).
+The HFF Dashboard is a specialized data management and visualization platform for the **Hope For Families** campaign. Its primary goal is to track participant registration and attendance across multi-day campaigns (typically 12 days) and provide real-time demographic insights. The system bridges the gap between **offline data collection** (via Enketo forms and Excel sheets) and **centralized monitoring** (via Google Sheets and a web dashboard).
 
 ## 2. Technical Stack
 - **Frontend**: React + Vite + Tailwind CSS (Hosted on Vercel).
@@ -21,7 +21,7 @@ The HFF Dashboard is a specialized data management and visualization platform fo
 
 ### A. Data Processing Engine (`hffRegister.js`)
 - **Header Detection**: Uses `detectHffHeaderRowIndex` to automatically find the "No." column in messy Excel files, regardless of title rows or empty space.
-- **Attendance Mapping**: Identifies the 18 columns assigned to daily attendance (columns 10-27 by default) and correlates them with dates.
+- **Attendance Mapping**: Identifies the 12 columns assigned to daily attendance (columns 10-21 by default) and correlates them with dates.
 - **Normalization**: Handles inconsistent inputs (e.g., converting "Monna", "1", "Male" all to "M" via `normalizeGender`).
 - **Analytics**: Calculates real-time stats for:
   - Total Registered vs. Unique Attendees.
@@ -75,7 +75,7 @@ The HFF Dashboard is a specialized data management and visualization platform fo
 The system relies on Google Sheets for its "master" record. In rural areas with unstable internet, the "Sync to Cloud" feature needs a robust retry mechanism and a clear "Pending Sync" UI indicator for users.
 
 ### 2. Device Scaling
-The dashboard is currently optimized for desktop/laptop screens. Field supervisors using tablets or phones will struggle with the current layout of the attendance grid (which is very wide—18 days).
+The dashboard is currently optimized for desktop/laptop screens. Field supervisors using tablets or phones will struggle with the current layout of the attendance grid (which is very wide—12 days).
 
 ### 3. Data Entry Errors in Enketo
 Enketo forms allow for free-text in some "Age" or "Gender" fields which bypasses the current normalization. The mapper needs even more defensive logic to handle unexpected strings.

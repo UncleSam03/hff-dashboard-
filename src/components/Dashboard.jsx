@@ -27,7 +27,7 @@ function processAnalytics(registrations) {
     const facilitators = registrations.filter(r => r.type === 'facilitator');
 
     // Attendance
-    const days = Array.from({ length: 18 }, (_, i) => `Day ${i + 1}`);
+    const days = Array.from({ length: 12 }, (_, i) => `Day ${i + 1}`);
 
     const dailyStats = days.map(day => {
         const count = participants.filter(p => p.attendance && p.attendance[day]).length;
@@ -108,7 +108,7 @@ const Dashboard = ({ mode = 'general', onBack }) => {
         return processAnalytics(registrations);
     }, [registrations]);
 
-    const days = Array.from({ length: 18 }, (_, i) => `Day ${i + 1}`);
+    const days = Array.from({ length: 12 }, (_, i) => `Day ${i + 1}`);
 
     // Participants subset for day-by-day drill-down
     const participants = useMemo(() => {
@@ -207,7 +207,7 @@ const Dashboard = ({ mode = 'general', onBack }) => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">Day-by-Day Analysis</h2>
-                        <p className="text-gray-500">Analyze campaign attendance for specific days across the 18-day cycle.</p>
+                        <p className="text-gray-500">Analyze campaign attendance for specific days across the 12-day cycle.</p>
                     </div>
                     <div className="flex flex-wrap gap-2 max-w-md">
                         {days.map((day, idx) => (

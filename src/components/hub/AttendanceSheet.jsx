@@ -5,7 +5,7 @@ import { Check, Search } from 'lucide-react';
 
 const AttendanceSheet = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const days = Array.from({ length: 18 }, (_, i) => `Day ${i + 1}`);
+    const days = Array.from({ length: 12 }, (_, i) => `Day ${i + 1}`);
 
     const participants = useLiveQuery(async () => {
         let collection = db.registrations.where('type').equals('participant');

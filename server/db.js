@@ -30,7 +30,7 @@ db.exec(`
         marital_status TEXT,
         other_2 TEXT,
         occupation TEXT,
-        attendance TEXT -- JSON string array of 18 values
+        attendance TEXT -- JSON string array of 12 values
     );
 `);
 

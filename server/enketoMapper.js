@@ -38,8 +38,8 @@ export function enketoToHffRow(xml, nextId = "") {
         const dayStr = getValue('attendance_day') || getValue('day');
         const dayNum = parseInt(dayStr, 10);
 
-        const attendance = Array(18).fill("");
-        if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 18) {
+        const attendance = Array(12).fill("");
+        if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 12) {
             attendance[dayNum - 1] = "1"; // Mark as present
         }
 
@@ -65,7 +65,7 @@ export function enketoToHffRow(xml, nextId = "") {
             getValue('marital_status'), // 7: Marital Status
             "",                     // 8: Other
             getValue('occupation'), // 9: Occupation
-            ...attendance           // 10-27: Day 1-18
+            ...attendance           // 10-21: Day 1-12
         ];
 
     } catch (e) {

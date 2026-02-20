@@ -40,7 +40,7 @@
 /* Attendance Grid */
 .attendance-grid {
   display: grid;
-  grid-template-columns: 200px repeat(18, minmax(40px, 1fr));
+  grid-template-columns: 200px repeat(12, minmax(40px, 1fr));
   gap: 1px;
   overflow-x: auto;
   background: #e2e8f0;

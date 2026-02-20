@@ -7,7 +7,7 @@ import {
     User, Clock
 } from "lucide-react";
 
-const TOTAL_DAYS = 18;
+const TOTAL_DAYS = 12;
 
 export default function ParticipantDashboard({ onBack }) {
     const { user, profile } = useAuth();
